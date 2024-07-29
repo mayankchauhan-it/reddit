@@ -1,38 +1,36 @@
-{% extends 'base_generic.html' %}
+{% extends "base_generic.html" %}
 
 {% block content %}
 <div class="container">
-  <h2 class="mb-4">{{ user.username }}'s Profile</h2>
-  
-  <div class="card mb-4">
-    <div class="card-body">
-      <h5 class="card-title">Bio</h5>
-      <p class="card-text">{{ profile.bio|default:"No bio available" }}</p>
-      <h5 class="card-title mt-4">Total Posts: {{ total_posts }}</h5>
-      <a href="{% url 'edit_profile' %}" class="btn btn-primary mt-4">Edit Profile</a>
-    </div>
-  </div>
-
-  <h3 class="mb-4">Posts</h3>
-  <div class="row">
-    {% for post in posts %}
-      <div class="col-md-4 mb-4">
-        <div class="card shadow-sm border-light rounded h-100 ">
-          <a href="{% url 'post_detail' post.id %}" class="text-decoration-none">
-            <div class="card-body">
-              <h5 class="card-title text-primary">{{ post.title }}</h5>
-              <p class="card-text text-muted">{{ post.description|truncatewords:20 }}</p>
+    <h2>Profile</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        <h3>Profile Information</h3>
+        {{ profile_form.as_p }}
+        
+        <h3>Interests</h3>
+        {{ interest_form.as_p }}
+        
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+    
+    <hr>
+    
+    <h3>My Posts (Total: {{ total_posts }})</h3>
+    <div class="row">
+        {% for post in posts %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="{% url 'post_detail' post.id %}">{{ post.title }}</a></h5>
+                        <p class="card-text">{{ post.description|truncatewords:20 }}</p>
+                    </div>
+                </div>
             </div>
-          </a>
-        </div>
-      </div>
-    {% empty %}
-      <div class="col-12">
-        <div class="alert alert-info" role="alert">
-          No posts available.
-        </div>
-      </div>
-    {% endfor %}
-  </div>
+        {% empty %}
+            <p>No posts available.</p>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

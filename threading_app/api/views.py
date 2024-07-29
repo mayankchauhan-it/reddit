@@ -17,13 +17,19 @@ class PostPagination(PageNumberPagination):
 @permission_classes([IsAuthenticated])
 def post_list(request):
     if request.method == 'GET':
+        posts = ""
         try:
             user_interests = UserInterest.objects.get(user=request.user)
             categories = user_interests.categories.all()
-            posts = Post.objects.filter(category__in=categories).order_by('-id')  # Order by latest
-            print("User interests found, filtering posts by categories")
+            print(len(categories))
+            if len(categories) > 0:
+                posts = Post.objects.filter(category__in=categories).order_by("-id")
+                print("User interests found, filtering posts by categories")
+            else:
+                posts = Post.objects.all().order_by("-id")
+                print("No user interests found, showing all posts")
         except UserInterest.DoesNotExist:
-            posts = Post.objects.all().order_by('-id')  # Order by latest
+            posts = Post.objects.all().order_by("-id")
             print("No user interests found, showing all posts")
 
         paginator = PostPagination()
