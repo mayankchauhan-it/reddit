@@ -1,0 +1,82 @@
+{% extends 'base_generic.html' %}
+
+{% block css %}
+<style>
+  .publish-post-container {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  h2 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .form-group {
+    margin-bottom: 15px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  .btn-submit {
+    background-color: #0079d3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-submit:hover {
+    background-color: #005fa3;
+  }
+  .alert {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+    display: none;
+  }
+</style>
+{% endblock css %}
+
+{% block content %}
+<div class="publish-post-container">
+  <h2>Publish Post</h2>
+  <form id="publish-post-form" method="post" enctype="multipart/form-data" class='form-control'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="alert" id="file-error">Only images and videos are allowed.</div>
+    <button type="submit" class="btn-submit">Publish</button>
+  </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#publish-post-form').on('submit', function(e) {
+      const fileInput = $(this).find('input[type="file"]');
+      const file = fileInput[0].files[0];
+      if (file) {
+        const fileType = file.type;
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/avi', 'video/mov'];
+        if (!allowedTypes.includes(fileType)) {
+          e.preventDefault();
+          $('#file-error').show();
+        } else {
+          $('#file-error').hide();
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

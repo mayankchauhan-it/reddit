@@ -1,0 +1,143 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block css %}
+<style>
+  body {
+    background-color: #f6f7f8;
+  }
+  .container {
+    margin-top: 20px;
+  }
+  h2 {
+    color: #333;
+  }
+  .card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 10px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+  }
+  .card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+  .card-body {
+    padding-top: 10px;
+  }
+  .card-top-image img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+  .load-more-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  #load-more {
+    background-color: #0079d3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #load-more:hover {
+    background-color: #005fa3;
+  }
+  #loading {
+    text-align: center;
+    margin-top: 20px;
+  }
+</style>
+{% endblock css %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Posts</h2>
+    </div>
+    <div id="post-list" class="col-md-12"></div>
+    <div class="load-more-container">
+      <button id="load-more" style="display: none;">Load More</button>
+    </div>
+  </div>
+  <div id="loading" style="display:none;">Loading...</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  let page = 1;
+  let loading = false;
+
+  const loadPosts = () => {
+    if (loading) return;
+    loading = true;
+    $('#loading').show();
+
+    $.ajax({
+      url: `/api/posts/?page=${page}`,
+      method: 'GET',
+      success: function(data) {
+        const postList = $('#post-list');
+        data.results.forEach(post => {
+          const card = $(`
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title">${post.created_by_username}</h5>
+              </div>
+              <div class="card-body">
+                <div class='card-top-image text-center'>
+                  ${post.attachments ? `<img src="${post.attachments}" alt="Post image">` : ''}
+                </div>
+                <h5 class="card-title"><a href="/posts/${post.id}/">${post.title}</a></h5>
+                <p>${post.description.substring(0, 30)}...</p>
+                <p>Category: ${post.category_name}</p>
+              </div> 
+            </div>
+          `);
+          postList.append(card);
+        });
+
+        if (data.next) {
+          page++;
+          $('#load-more').show();
+        } else {
+          $('#load-more').hide();
+        }
+        loading = false;
+        $('#loading').hide();
+
+        if (!data.next) {
+          $(window).off('scroll', handleScroll);
+        }
+      }
+    });
+  };
+
+  const handleScroll = () => {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
+      loadPosts();
+    }
+  };
+
+  $(document).ready(function() {
+    loadPosts(); 
+    
+    $('#load-more').click(function() {
+      loadPosts();  
+    });
+
+    $(window).on('scroll', handleScroll);
+  });
+</script>
+{% endblock %}
